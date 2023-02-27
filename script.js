@@ -1,7 +1,6 @@
 imageTiles = document.getElementsByClassName("image-tiles");
 tilesContainer = document.getElementById("tiles-container");
 gameContainer = document.getElementById("game-container");
-singleTilesContainer = document.getElementById("single-tiles-container");
 score = document.getElementById("score");
 lives = document.getElementById("lives");
 reset = document.getElementById("reset");
@@ -9,22 +8,44 @@ minutes = document.getElementById("minutes");
 seconds = document.getElementById("seconds");
 
 let randomPositionsCollection = [];
-while (randomPositionsCollection.length < 12) {
-  pairRandomPosition = Math.floor(Math.random() * 12);
-  if (randomPositionsCollection.includes(pairRandomPosition) == false) {
-    randomPositionsCollection.push(pairRandomPosition);
-    // console.log(randomPositionsCollection);
-  }
-}
+
 let gameScore = 0;
 let gameLives = 5;
 let arrangedImagesCollection = [];
 
-// function startGame() {
-//   startGameContainer = document.createElement("div")
-// }
+function randomizeImagePositions() {
+  randomPositionsCollection = [];
+  while (randomPositionsCollection.length < 12) {
+    pairRandomPosition = Math.floor(Math.random() * 12);
+    if (randomPositionsCollection.includes(pairRandomPosition) == false) {
+      randomPositionsCollection.push(pairRandomPosition);
+    }
+  }
+}
 
-let initialDelay = setTimeout(generatePairedImages, 1000);
+function startGame() {
+  startGameContainer = document.createElement("div");
+  startGameContainer.classList.add("startup");
+  tilesContainer.appendChild(startGameContainer);
+  instructions = document.createElement("div");
+  instructions.innerHTML =
+    "Remember the position of various images, and guess them correctly to win";
+  instructions.classList.add("game-instructions");
+  startGameContainer.appendChild(instructions);
+  playGame = document.createElement("button");
+  playGame.innerHTML = "Let's Start";
+  playGame.classList.add("game");
+  startGameContainer.appendChild(playGame);
+  playGame.addEventListener("click", renderGame);
+}
+
+function renderGame() {
+  randomizeImagePositions();
+  console.log("randomPositionsCollection", randomPositionsCollection);
+  initialDelay = setTimeout(generatePairedImages, 1000);
+  hideImages = setTimeout(toHidePairedImages, 3000);
+  startGameContainer.style.display = "none";
+}
 
 function generatePairedImages() {
   //   console.log("pair");
@@ -77,8 +98,6 @@ function generatePairedImages() {
   }
 }
 
-hideImages = setTimeout(toHidePairedImages, 2000);
-
 function toHidePairedImages() {
   tilesContainer.classList.remove("disable-pointer");
   for (let i = 0; i < imageTiles.length; i++) {
@@ -107,12 +126,9 @@ for (let i = 0; i < imageTiles.length; i++) {
 }
 
 function showImageTile(i) {
-  //
-  console.log("in showImageTile");
-  console.log("firstImageClicked", firstImageClicked);
-  //   imageTiles[i].classList.remove("hide-back");
-  //   imageTiles[i].classList.add("show-image");
-
+  // //
+  // console.log("in showImageTile");
+  // console.log("firstImageClicked", firstImageClicked);
   imageTiles[i].src = arrangedImagesCollection[i];
   firstImageTilePosition = i;
   firstClickedImagePosition = arrangedImagesCollection[i].slice(4, 5);
@@ -145,6 +161,9 @@ function compareImageTiles(i) {
     }, 1000);
   } else {
     imageTiles[secondImageTilePosition].classList.add("disable-pointer");
+    // imageTiles[secondImageTilePosition].classList.add("hide-back");
+    // imageTiles[secondImageTilePosition].classList.remove("show-image");
+    // imageTiles[firstImageTilePosition].classList.add("hide-back");
     gameScore++;
     score.innerHTML = ("0" + gameScore).slice(-2);
     if (gameScore == 6) {
@@ -174,27 +193,27 @@ function displayResult(resultString) {
 function resartGame() {
   tilesContainer.classList.remove("disable-pointer");
   resultWindow.style.display = "none";
-
   resetGame();
 }
 
-reset.addEventListener("click", resetGame);
-
 function resetGame() {
   clearInterval(gameTimer);
+  randomizeImagePositions();
+  // console.log("resetGame", randomPositionsCollection);
   gameScore = 0;
   gameLives = 5;
   score.innerHTML = "0" + gameScore;
   lives.innerHTML = "0" + gameLives;
   gameSeconds = 0;
-  gameMinutes = 02;
+  gameMinutes = 2;
   seconds.innerHTML = ("0" + gameSeconds).slice(-2);
   minutes.innerHTML = "0" + gameMinutes;
 
   initialDelay = setTimeout(generatePairedImages, 1000);
-  hideImages = setTimeout(toHidePairedImages, 2000);
+  hideImages = setTimeout(toHidePairedImages, 3000);
   for (let i = 0; i < imageTiles.length; i++) {
     imageTiles[i].classList.remove("disable-pointer");
+    imageTiles[i].src = "bg.jpg";
   }
 }
 
@@ -215,9 +234,11 @@ function displayTimer() {
     if (gameMinutes < 0) {
       minutes.innerHTML = "00";
       seconds.innerHTML = "00";
-      let resultString = "You Lost";
-      displayResult(resultString);
+      displayResult("You Lost");
       clearInterval(gameTimer);
     }
   }
 }
+
+startGame();
+reset.addEventListener("click", resetGame);
